@@ -17,7 +17,26 @@ function userInformationHTML(user) {
 
 }
 
+function repoInformationHTML(repos) {
+    if (repos.lenght == 0) {
+        return `<div class="clearfix repo-list">No repos!</div>`;
+    }
 
+    var listItemsHTML = repos.map(function(repo) {
+        return `<li>
+                    <a href ="${repo.html_url}" target="_blank">${repo.name}</a>
+                </li>`;
+    });
+
+    return `<div class="clearfix repo-list">
+                <p>
+                    <strong>Repo List:</strong>
+                </p>
+                <ul>
+                    ${listItemsHTML.join("\n")}
+                </ul>
+            </div>`
+}
 
 
 function fetchGitHubInformation(event) {
@@ -34,15 +53,18 @@ function fetchGitHubInformation(event) {
         </div>`);
 
     $.when(
-        $.getJSON(`https://api.github.com/users/${username}`)
+        $.getJSON(`https://api.github.com/users/${username}`),
+        $.getJSON(`https://api.github.com/users/${username}/repos`)
     ).then(
-        function (response) {
-            var userData = response;
+        function(firstResponse, secondResponse) {
+            var userData = firstResponse[0];
+            var repoData = secondResponse[0];
             $("#gh-user-data").html(userInformationHTML(userData));
+            $("#gh-repo-data").html(repoInformationHTML(repoData));
         },
         function (errorResponse) {
             if (errorResponse.status === 404) {
-                $("#gh-user-data").html(`<h2>No info foun for user ${username}</h2>`);
+                $("#gh-user-data").html(`<h2>No info found for user ${username}</h2>`);
             } else {
                 console.log(errorResponse);
                 $("#hg-user-data").html(
